@@ -1,33 +1,31 @@
-bool debug = false;
-int n = 6;
+bool debug = true;
 
-border a(t=0, 2.*pi){x=cos(t); y=sin(t); label=1;};
-border b(t=0, 2.*pi){x=0.3+0.3*cos(t); y=0.3*sin(t); label=2;};
+border a(t=0, 2.*pi){
+  x=cos(t);
+  y=sin(t);
+};
 
-plot(a(50) + b(-30), wait=debug); //plot the borders to see the intersection
-
-mesh Th = buildmesh(a(n) + b(-n));
+mesh Th = buildmesh(a(10));
 
 fespace Vh(Th,P2);
 Vh f = x^2 + y^2 - 2;
 
-Vh df = dx(f);
+Vh df = dx(f); // Equals to 2*x
 cout << "Min value: " << df[].min << endl;
 cout << "Max value: " << df[].max << endl;
+plot(df, wait=debug, fill=true, value=true); // Plot the function df
+
 
 // Vh ddf = dx(dx(f)); Thats not working
 
-Vh ddf = dx(df);
+Vh ddf = dxx(f); // Equals to 2
 cout << "Min value: " << ddf[].min << endl;
 cout << "Max value: " << ddf[].max << endl;
-
-// Note: dxx is 
-plot(df, wait=debug, fill=true); //plot the function f
-plot(ddf, wait=debug, fill=true); //plot the function f
+plot(ddf, wait=debug, fill=true, value=true); // Plot the function ddf
 
 // Save to file
 
-ofstream fdata("output/dat/functions.dat");
+ofstream fdata("output/dat/Functions.dat");
 for (int i = 0; i < Th.nt; i++) {
   for (int j = 0; j < 3; j++) {
     fdata << Vh(i,j) << endl;
