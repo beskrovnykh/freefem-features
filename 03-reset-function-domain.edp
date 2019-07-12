@@ -1,0 +1,49 @@
+border a(t=0, 2*pi) {
+  x=cos(t);
+  y=sin(t);
+};
+mesh Th = buildmesh(a(10));
+
+fespace Vh(Th, P1);
+
+Vh f = exp(-2*pi*sqrt(x^2 + y^2));
+
+plot(Th, f, fill=true, wait=true);
+
+Th = movemesh(Th, [2.*x,y/2.]); // Redefine existed domain
+
+plot(Th, f, fill=true, wait=true); // f is defined on the previous domain
+// (this is unexpected behaviour)
+
+// Solution: to remove old mesh we need to reset function to zero and then
+// restore its values
+real[int] tmp(f.n);
+tmp = f[];
+f = 0; // n
+f[] = tmp;
+
+plot(Th, f, fill=true, wait=true); // Domain of f is now changed as unexpected
+
+// Assume that we have more functions
+// Vh f = ... and
+Vh g = x^2 + y^2;
+Vh p = f;
+Vh q;
+
+// and tranform domain again
+Th = movemesh(Th, [x/2.,y*2.]);
+
+// Problem: reset domain of all functions defined above
+plot(Th, f, fill=true, wait=true);
+
+// Solution: to use macros
+macro resetdomain(h) {
+  real[int] tmp(h.n);
+  tmp = h[]; h = 0; h[] = tmp;
+}//
+
+resetdomain(f)
+resetdomain(g)
+
+plot(Th, f, fill=true, wait=true);
+plot(Th, g, fill=true, wait=true);
