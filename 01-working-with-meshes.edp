@@ -1,0 +1,74 @@
+// Boder
+border a(t=0, 2*pi){
+  x=cos(t);
+  y=sin(t);
+};
+mesh disk = buildmesh(a(10));
+
+cout << "Number of triangles: " << disk.nt << endl;
+cout << "Number of vertices: " << disk.nv << endl;
+plot(disk, wait=true); //plot Th then press Enter;
+
+// Translation
+mesh translate1 = movemesh(disk, [x+1, y]);
+mesh translate2 = movemesh(disk, [x, y+1]);
+plot(disk, translate1, translate2,wait=true);
+
+// Axial scaling
+mesh scale1 = movemesh(disk, [0.5*x, y]);
+mesh scale2 = movemesh(disk, [x, 0.5*y]);
+plot(disk,scale1,scale2, wait=true);
+
+// Save mesh into mesh file
+savemesh(disk, "output/dat/Th.mesh");
+
+// Save triangulation
+{
+  fespace Vh(disk, P1); // let's define functional space we will use it to get
+  // global vertex indeices
+  ofstream mdata("output/dat/Triangles.dat");
+  mdata << "Mesh area: " << disk.measure << endl;
+  mdata << "Number of triangles: " << disk.nt << endl;
+  for (int i = 0; i < disk.nt; i++) {
+    for (int j = 0; j < 3; j++) {
+      mdata << Vh(i,j) << "   " << disk[i][j].x << "   " << disk[i][j].y << endl;
+    }
+    mdata << "\n\n";
+  }
+}
+
+// Save boundary edges
+{
+  fespace Vh(disk, P1);
+  Vh X = x;
+  Vh Y = y;
+  ofstream mdata("output/dat/Boundary.dat");
+  mdata << "Border length: " << disk.bordermeasure << endl;
+  mdata << "Number of boundary elements: " << disk.nbe << endl;
+  int v1, v2;
+  for (int i = 0; i < disk.nbe; i++) {
+    mdata << "Boundary element: " << disk.be(i) << endl;
+    mdata << "   Vertices: " << endl;
+    v1 = disk.be(i)[0];
+    v2 = disk.be(i)[1];
+    mdata << "      v" << v1 << "   " << X[][v1] << "   " << Y[][v1] << endl;
+    mdata << "      v" << v2 << "   " << X[][v2] << "   " << Y[][v2] << endl;
+    mdata << "   Edge " << disk.be(i).whoinElement
+      << " in Triangle " << disk.be(i).Element << endl;
+  }
+}
+
+// Save function values together with mesh coordinates
+{
+  fespace Vh(disk, P1);
+  Vh F = x^2 + y^2;
+  Vh X = x;
+  Vh Y = y;
+  ofstream mdata("output/dat/FunctionRegionValues.dat");
+  for (int i = 0; i < disk.nv; i++) {
+    real xValue = X[][i];
+    real yValue = Y[][i];
+    real fValue = F[][i];
+    mdata << xValue << "   " << yValue << "   " << fValue << endl;
+  }
+}

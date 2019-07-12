@@ -1,0 +1,35 @@
+bool debug = false;
+int n = 6;
+
+border a(t=0, 2.*pi){x=cos(t); y=sin(t); label=1;};
+border b(t=0, 2.*pi){x=0.3+0.3*cos(t); y=0.3*sin(t); label=2;};
+
+plot(a(50) + b(-30), wait=debug); //plot the borders to see the intersection
+
+mesh Th = buildmesh(a(n) + b(-n));
+
+fespace Vh(Th,P2);
+Vh f = x^2 + y^2 - 2;
+
+Vh df = dx(f);
+cout << "Min value: " << df[].min << endl;
+cout << "Max value: " << df[].max << endl;
+
+// Vh ddf = dx(dx(f)); Thats not working
+
+Vh ddf = dx(df);
+cout << "Min value: " << ddf[].min << endl;
+cout << "Max value: " << ddf[].max << endl;
+
+// Note: dxx is 
+plot(df, wait=debug, fill=true); //plot the function f
+plot(ddf, wait=debug, fill=true); //plot the function f
+
+// Save to file
+
+ofstream fdata("output/dat/functions.dat");
+for (int i = 0; i < Th.nt; i++) {
+  for (int j = 0; j < 3; j++) {
+    fdata << Vh(i,j) << endl;
+  }
+}
