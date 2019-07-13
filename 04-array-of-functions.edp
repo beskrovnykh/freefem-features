@@ -1,0 +1,28 @@
+mesh Th=square(2,2);
+
+fespace Vh(Th, P1);
+fespace Wh(Th, [P2,P2]);
+
+int n = 2; //size of the array.
+
+// Arrays of FE functions
+Vh[int] v(n); // scalar case
+Wh[int] [u1, u2](n); // vectorial case
+
+v[0] = x+y;
+v[1] = x-y;
+[u1[0],u2[0]] = [x^2+y^2,y];
+[u1[1],u2[1]] = [x^2-y^2,-y];
+
+cout << "Size of v: " << v.n << endl;
+v.resize(2*n);
+cout << "Size of v: " << v.n << endl;
+cout << "v[0]: " << v[0][] << endl;
+cout << "v[1]: " << v[1][] << endl;
+cout << "Unset 0 and 1 elements" << endl;
+v[0]=0;
+v[1]=0;
+cout << "v[0]: " << v[0][] << endl;
+cout << "v[1]: " << v[1][] << endl;
+cout << "v[2]: " << v[2][] << endl;
+cout << "v[3]: " << v[3][] << endl;

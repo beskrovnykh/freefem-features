@@ -1,0 +1,4 @@
+mesh[int] array(2);
+array[0]= square(1,1);
+array[1]= square(2,2);
+plot(array[1]);
