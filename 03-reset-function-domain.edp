@@ -2,48 +2,108 @@ border a(t=0, 2*pi) {
   x=cos(t);
   y=sin(t);
 };
+
 mesh Th = buildmesh(a(10));
 
 fespace Vh(Th, P1);
 
 Vh f = exp(-2*pi*sqrt(x^2 + y^2));
-
-plot(Th, f, fill=true, wait=true);
-
-Th = movemesh(Th, [2.*x,y/2.]); // Redefine existed domain
-
-plot(Th, f, fill=true, wait=true); // f is defined on the previous domain
-// (this is unexpected behaviour)
-
-// Solution: to remove old mesh we need to reset function to zero and then
-// restore its values
-real[int] tmp(f.n);
-tmp = f[];
-f = 0; // n
-f[] = tmp;
-
-plot(Th, f, fill=true, wait=true); // Domain of f is now changed as unexpected
-
-// Assume that we have more functions
-// Vh f = ... and
 Vh g = x^2 + y^2;
-Vh p = f;
-Vh q;
 
-// and tranform domain again
-Th = movemesh(Th, [x/2.,y*2.]);
+// Use macros for short
+macro plt(f) plot(Th, f, fill=true, wait=true, bb=[[-2,-2],[2,2]]); //
+plt(f)
 
-// Problem: reset domain of all functions defined above
-plot(Th, f, fill=true, wait=true);
+{
+  cout << "Reset domain of the single function" << endl;
+  Th = movemesh(Th, [2.*x, y/2.]);
 
-// Solution: to use macros
-macro resetdomain(h) {
-  real[int] tmp(h.n);
-  tmp = h[]; h = 0; h[] = tmp;
-}//
+  plt(f) // Bad
 
-resetdomain(f)
-resetdomain(g)
+  // Solution: reset function to zero and then restore its values
+  real[int] tmp(f.n);
+  tmp = f[];
+  f = 0; // n
+  f[] = tmp;
 
-plot(Th, f, fill=true, wait=true);
-plot(Th, g, fill=true, wait=true);
+  plt(f) // Good
+}
+
+{
+  // Assume that we have 10 functions: f, g, ...
+  cout << "Reset domain of the multiple functions (1)" << endl;
+
+  // Let's tranform Th again
+  Th = movemesh(Th, [x/2.,y*2.]);
+
+  // Problem: reset domain of all functions defined above
+  plt(f)
+
+  // Solution: to use macros
+  macro resetdomain(h) {
+    real[int] tmp(h.n);
+    tmp = h[]; h = 0; h[] = tmp;
+  }//
+
+  resetdomain(f)
+  resetdomain(g)
+
+  plt(f) // Good
+  plt(g) // Good
+}
+
+{
+  cout << "Reset domain of the multiple functions (2)" << endl;
+  // to be super short
+  macro rd(h) { real[int] tmp(h.n); tmp = h[]; h = 0; h[] = tmp; }//
+
+  // What if we change domain and call resetdomin only for f not for g?
+  Th = movemesh(Th, [x+1,y*2]);
+
+  rd(f)
+  plt(f) // Good
+
+  plt(g) // Bad
+
+  rd(g)
+  plt(g) // Good
+
+  // So, this is enough to reset domain only fot the function you want to plot!
+}
+
+{
+  cout << "Another way to reset domain" << endl;
+
+  // Consider another way to reset domain
+  macro rd1(h) h = h; //
+  macro rd2(h) { real[int] tmp(h.n); tmp = h[]; h = 0; h[] = tmp; } //
+
+  // Reset mesh to original state
+  macro resetmesh(Th) Th = buildmesh(a(10)); //
+  resetmesh(Th)
+
+  // rd1(f) // Bad, f is corrupted, DONT'T USE IT
+  // plt(f)
+
+  rd2(f)
+  plt(f)
+}
+
+{
+  cout << "Combine reset domain with plot macros" << endl;
+
+  macro resetmesh(Th) Th = buildmesh(a(10)); //
+  macro safeplot(h) real[int] tmp(h.n); tmp = h[]; h = 0; h[] = tmp; plt(h) //
+
+  func u1 = 0.1*x;
+  func u2 = 0.1*y;
+
+  for (int j = 0; j < 2; j++) {
+    resetmesh(Th)
+    for (int i = 0; i < 6; i++) {
+      Th = movemesh(Th, [x+u1(x,y), y+u2(x,y)]);
+      plt(f) // Bad
+      safeplot(f) // Good
+    }
+  }
+}
