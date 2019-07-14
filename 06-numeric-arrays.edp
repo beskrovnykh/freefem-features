@@ -1,0 +1,14 @@
+real[int] a(0:1:10);
+cout << "sz: " << a.n << endl;
+a = a / 10.;
+cout << a << endl;
+{
+  ofstream ff("output/numeric-arrays.dat");
+  ff << a;
+}
+{
+  ifstream it("output/numeric-arrays.dat");
+  real[int] b(11);
+  it >> b;
+  cout << b << endl; // same as a
+}
