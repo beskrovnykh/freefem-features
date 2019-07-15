@@ -55,7 +55,7 @@ plt(f)
 {
   cout << "Reset domain of the multiple functions (2)" << endl;
   // to be super short
-  macro rd(h) { real[int] tmp(h.n); tmp = h[]; h = 0; h[] = tmp; }//
+  macro rd(h) { real[int] tmp(h.n); tmp = h[]; h = 0; h[] = tmp; } //
 
   // What if we change domain and call resetdomin only for f not for g?
   Th = movemesh(Th, [x+1,y*2]);
@@ -106,4 +106,48 @@ plt(f)
       safeplot(f) // Good
     }
   }
+}
+
+{
+  cout << "Lagrangian FE functions definition" << endl;
+
+  // The task is to create a space of finite-element
+  // material functions given on a changing mesh.
+
+  macro resetmesh(Th) Th = buildmesh(a(100)); //
+  resetmesh(Th)
+
+  macro plt2(TT, ff, text) plot(TT, ff, fill=true, wait=true, value=true,
+     bb=[[-2,-2],[2,2]], cmm=text); //
+
+  fespace Wh(Th, P1);
+  Wh u1 = 0.5*x, u2 = 0.5*y, h = exp(10*x^2-10*y^2);
+  plt2(Th, h, "1"); // Good
+
+  // Declare material moving mesh if Lagrangian framework on the basis of Th
+  // assuming [u1, u2] movement of material particles
+
+  // Note: We must safe Th and Wh
+  mesh TMh = movemesh(Th, [x+u1, y+u2]); // Moving mesh
+  // Declare
+  fespace WMh(TMh, P1);
+  // FE functions given in Lagrangian framework
+  WMh hm;
+  // Just write that hm equals h assumming that x and y are material Lagrangian coordinates
+  hm = h;
+  // But it fails
+  plt2(TMh, hm, "2") // Bad
+
+  macro swap(h, hm) real[int] tmp(h.n); hm = 0; tmp = h[]; hm[] = tmp; //
+
+  swap(h, hm)
+  plt2(TMh, hm, "3") // Good
+
+  for (int i = 0; i < 3; i++) {
+    TMh = movemesh(TMh, [x+u1, y+u2]);
+    swap(h, hm)
+    plt2(TMh, hm, 4 + i + "") // Good
+  }
+
+  plt2(Th, h, "7") // Good, safe
 }
