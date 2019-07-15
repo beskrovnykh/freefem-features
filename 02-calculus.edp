@@ -23,11 +23,10 @@ cout << "Min value: " << ddf[].min << endl;
 cout << "Max value: " << ddf[].max << endl;
 plot(ddf, wait=debug, fill=true, value=true); // Plot the function ddf
 
-// Save to file
+// For area of transformed domain
 
-ofstream fdata("output/dat/Functions.dat");
-for (int i = 0; i < Th.nt; i++) {
-  for (int j = 0; j < 3; j++) {
-    fdata << Vh(i,j) << endl;
-  }
-}
+cout << int2d(Th)(1) << "   " << Th.measure << endl;
+Vh u1 = 2*x, u2 = 2*y, detdu = dx(u1)*dy(u2) - dx(u2)*dy(u1);
+cout << int2d(Th)(detdu) << "   " << Th.measure * 4 << endl;
+Th = movemesh(Th, [u1,u2]);
+cout << int2d(Th)(1) << "   " << Th.measure << endl;
