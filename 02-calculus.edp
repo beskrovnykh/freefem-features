@@ -23,10 +23,14 @@ cout << "Min value: " << ddf[].min << endl;
 cout << "Max value: " << ddf[].max << endl;
 plot(ddf, wait=debug, fill=true, value=true); // Plot the function ddf
 
-// For area of transformed domain
 
-cout << int2d(Th)(1) << "   " << Th.measure << endl;
+// Area of original domain
+cout << int2d(Th)(1) << " equals " << Th.measure << endl;
+
+// Area of a transformed domain
 Vh u1 = 2*x, u2 = 2*y, detdu = dx(u1)*dy(u2) - dx(u2)*dy(u1);
-cout << int2d(Th)(detdu) << "   " << Th.measure * 4 << endl;
+cout << int2d(Th)(detdu) << " equals  " << Th.measure * 4 << endl;
+
+// Area of a transformed domin (another way)
 Th = movemesh(Th, [u1,u2]);
 cout << int2d(Th)(1) << "   " << Th.measure << endl;
